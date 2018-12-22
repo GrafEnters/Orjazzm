@@ -1,8 +1,8 @@
-﻿#include "pch.h" // удалите это если у вас не Visual Studio
+﻿#include "pch.h"     // удалите это если у вас не Visual Studio
 #include <iostream>
-#include <iomanip>  //для setprecision
-#include <windows.h> // для задержки Sleep(40); 40 - колво миллисекунд
-#include <ctime> // для генератора случайных чисел
+#include <iomanip>   // для setprecision и fixed
+#include <windows.h> // для задержки Sleep(40), в миллисекундах
+#include <ctime>     // для генератора случайных чисел
 using namespace std;
 
 const char simv_wall = char(219); // '▓' стена
@@ -14,26 +14,31 @@ struct Hero
 {
 	int x, y, hp;
 	char name, memory;
+	Hero()
+	{
+		x = 2;
+		y = 2;
+		name = simv_hero;
+		memory = simv_floor;
+	}
 };
 
-class Field
+class Level
 {
 public:
-	int n, m;
-	Hero h;
+	int width, height;
+	Hero hero;
 	char **pole;
 	int lvlnumber;
-	bool exist = false;
 	void Create()
 	{
-		exist = true;
 		srand((int)time(0));
-		pole = new char*[m];
-		for (int z = 0; z < n; z++)pole[z] = new char[n];
-		h.memory = simv_floor;
-		for (int i = 0; i < n; i++)
+		pole = new char*[height];
+		for (int z = 0; z < width; z++)pole[z] = new char[width];
+		hero.memory = simv_floor;
+		for (int i = 0; i < width; i++)
 		{
-			for (int j = 0; j < m; j++)
+			for (int j = 0; j < height; j++)
 			{
 				pole[i][j] = simv_floor;
 				if (rand() % 3 == 1) pole[i][j] = simv_wall;
@@ -41,36 +46,30 @@ public:
 		}
 		char p = simv_hero;
 		while (p == simv_hero)
-			p = pole[(rand() % n)][(rand() % m)];
-		pole[(rand() % n)][(rand() % m)] = simv_exit;
+			p = pole[(rand() % width)][(rand() % height)];
+		pole[(rand() % width)][(rand() % height)] = simv_exit;
 	}
 	void Show(int steps, double score)
 	{
-		if (exist) {
-			Sleep(80); cout << endl;
-			system("cls");
-			for (int i = 0; i < n; i++)
-			{
-				for (int j = 0; j < m; j++)
-					cout << pole[i][j] << pole[i][j];
-				if (i == 0) cout << "           Level: " << lvlnumber;
-				if (i == 2) cout << setprecision(3) << fixed << "           SCORE: " << score;
-				if (i == 6) cout << "           Steps: " << steps;				
-				if (i == n - 2) cout << "     Press 0 to end game ";
-				cout << endl;
-			}
+		Sleep(80); cout << endl;
+		system("cls");
+		for (int i = 0; i < width; i++)
+		{
+			for (int j = 0; j < height; j++)
+				cout << pole[i][j] << pole[i][j];
+			if (i == 0) cout << "           Level: " << lvlnumber;
+			if (i == 2) cout << setprecision(3) << fixed << "           SCORE: " << score;
+			if (i == 6) cout << "           Steps: " << steps;
+			if (i == width - 2) cout << "     Press 0 to end game ";
+			cout << endl;
 		}
 	}
-	Field(int number, int steps, double score)
+	Level(Hero h, int number, int steps, double score)
 	{
-		srand((int)time(0));
+		hero = h;
 		lvlnumber = number;
-		m = 10 + number / 3;
-		n = 10 + number / 3;
-		h.x = 2;
-		h.y = 2;
-		h.name = simv_hero;
-		h.memory = simv_floor;
+		height = 10 + number / 3;
+		width = 10 + number / 3;
 		Create();
 		pole[h.x][h.y] = h.name;
 		Show(steps, score);
@@ -91,67 +90,53 @@ void changefontsize(int a)
 
 int main()
 {
-	int steps = 0;
-	double score = 0;
-	changefontsize(20);
-	int xnew = 2, ynew = 2, n = 10, m = 10, lvlnumber = 0;
 	Hero A;
-	A.name = simv_hero;
-	A.memory = simv_floor;
-	A.x = 2;
-	A.y = 2;
+	int xnew, ynew, n, m;
+	int steps = 0;
+	int lvlnumber = 0;
+	double score = 0;
 	char direction = 'a';
-
-
+	changefontsize(20);
 	while (direction != '0')
 	{
-		Field b(lvlnumber, steps, score);
+		Level lvl(A, lvlnumber, steps, score);
 		m = 10 + lvlnumber / 3;
 		n = 10 + lvlnumber / 3;
 		// передвижение
-		while (direction != '0' && b.h.memory != simv_exit)
+		while (direction != '0' && lvl.hero.memory != simv_exit)
 		{
+			lvl.pole[lvl.hero.x][lvl.hero.y] = lvl.hero.memory;
 			cin >> direction;
-			b.pole[b.h.x][b.h.y] = b.h.memory;
+			ynew = lvl.hero.y; xnew = lvl.hero.x;
 			switch (direction)
 			{
-			case 'w':
-				xnew = b.h.x - 1; xnew = xnew % n; if (xnew == -1)xnew = n - 1;
-				if (b.pole[(xnew)][b.h.y] != simv_wall) {
-					b.h.x = xnew;
-					b.h.memory = b.pole[b.h.x][b.h.y];
-				}
+			case 'w':xnew--;
 				break;
-			case 'a':
-				ynew = b.h.y - 1; ynew = ynew % m; if (ynew == -1)ynew = m - 1;
-				if (b.pole[(b.h.x)][ynew] != simv_wall) {
-					b.h.y = ynew;
-					b.h.memory = b.pole[b.h.x][b.h.y];
-				}
+			case 'a':ynew--;
 				break;
-			case 's':
-				xnew = b.h.x + 1; xnew = xnew % n; if (xnew == -1)xnew = n - 1;
-				if (b.pole[(xnew)][b.h.y] != simv_wall) {
-					b.h.x = xnew;
-					b.h.memory = b.pole[b.h.x][b.h.y];
-				}
+			case 's':xnew++;
 				break;
-			case 'd':
-				ynew = b.h.y + 1; ynew = ynew % m;
-				if (b.pole[(b.h.x)][ynew] != simv_wall) {
-					b.h.y = ynew;
-					b.h.memory = b.pole[b.h.x][b.h.y];
-				}
+			case 'd':ynew++;
 				break;
 			}
-			if (b.exist) b.pole[b.h.x][b.h.y] = b.h.name;
-			steps++; if (direction == '0') steps--;
-			score = (1 + (double)steps / 10.0)*5.0*(double)lvlnumber / ((double)steps * (1 + (double)steps / 100.0));
-			b.Show(steps, score);
+			xnew = xnew % n; if (xnew == -1)xnew = n - 1;
+			ynew = ynew % m; if (ynew == -1)ynew = m - 1;
+			if (lvl.pole[xnew][ynew] != simv_wall)
+			{
+				lvl.hero.x = xnew; lvl.hero.y = ynew;
+				lvl.hero.memory = lvl.pole[xnew][ynew];
+			}
+			lvl.pole[lvl.hero.x][lvl.hero.y] = lvl.hero.name;
+			if (direction != '0')
+			{
+				steps++;
+				score = (1 + (double)steps / 10.0)*5.0*(double)lvlnumber / ((double)steps * (1 + (double)steps / 100.0));
+			}
+			lvl.Show(steps, score);
 		}
 		lvlnumber++;
 		score = (1 + (double)steps / 10.0)*5.0*(double)lvlnumber / (double)steps;
-		b.Show(steps, score);
+		lvl.Show(steps, score);
 	}
 	return 0;
 }
