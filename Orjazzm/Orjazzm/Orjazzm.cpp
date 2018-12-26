@@ -9,7 +9,7 @@ const char simv_wall = char(219); // '▓' стена
 const char simv_floor = char(32); // ' ' проход
 const char simv_exit = char(88);  // 'X' выход
 const char simv_hero = char(65);  // 'A' герой
-
+const char simv_check = char(46);  // '.' проверка
 struct Hero
 {
 	int x, y, hp;
@@ -27,6 +27,7 @@ class Level
 {
 public:
 	int width, height;
+	int exitx, exity;
 	Hero hero;
 	char **pole;
 	int lvlnumber;
@@ -44,11 +45,24 @@ public:
 				if (rand() % 3 == 1) pole[i][j] = simv_wall;
 			}
 		}
-		char p = simv_hero;
-		while (p == simv_hero)
-			p = pole[(rand() % width)][(rand() % height)];
-		pole[(rand() % width)][(rand() % height)] = simv_exit;
+		pole[hero.x][hero.y] = hero.name;
+
+		bool proverka = false;
+		while (!proverka)
+		{
+			char p = simv_floor;
+			srand((int)time(0));
+			while (p != simv_wall)
+			{
+				exitx = rand() % width;
+				exity = rand() % height;
+				p = pole[exitx][exity];
+			}
+			pole[exitx][exity] = simv_exit;
+			proverka = PlaceFinish(pole);
+		}
 	}
+
 	void Show(int steps, double score)
 	{
 		Sleep(80); cout << endl;
@@ -71,8 +85,93 @@ public:
 		height = 10 + number / 3;
 		width = 10 + number / 3;
 		Create();
-		pole[h.x][h.y] = h.name;
+
 		Show(steps, score);
+	}
+	bool PlaceFinish(char **f)
+	{
+		bool flag = false;
+		//тут должна быть проверка на достижимостть финиша, но пока я не знаю как это сделать 
+		//ни гугл, ни обычный волновой тут не помогут, т.к. у меня зациклено поле 
+		//так что ожидаемо в среду я это сделаю, пока нет ни времени, ни желания
+
+		int nwas, mwas;
+		for (int n = 0; n < width; n++)
+		{
+			for (int m = 0; m < height; m++)
+			{
+				if (f[n][m] == simv_exit) { nwas = n; mwas = m; }
+			}
+		}
+		for (int i = 0; i < (int)height*sqrt(width); i++)
+		{
+			for (int n = 0; n < width; n++)
+			{
+				for (int m = 0; m < height; m++)
+				{
+					if (f[n][m] == simv_exit && n != 0 && n != width - 1 && m != 0 && m != height - 1)
+					{
+						if (f[n + 1][m] == simv_hero || f[n - 1][m] == simv_hero || f[n][m + 1] == simv_hero || f[n][m - 1] == simv_hero) flag = true;
+						else {
+							if (f[n + 1][m] != simv_wall) f[n + 1][m] = simv_exit;
+							if (f[n - 1][m] != simv_wall) f[n - 1][m] = simv_exit;
+							if (f[n][m + 1] != simv_wall) f[n][m + 1] = simv_exit;
+							if (f[n][m - 1] != simv_wall) f[n][m - 1] = simv_exit;
+						}
+					}
+					else if (f[n][m] == simv_exit && n == 0 && m != 0 && m != height - 1)
+					{
+						if (f[n + 1][m] == simv_hero || f[width - 1][m] == simv_hero || f[n][m + 1] == simv_hero || f[n][m - 1] == simv_hero) flag = true;
+						else {
+							if (f[n + 1][m] != simv_wall) f[n + 1][m] = simv_exit;
+							if (f[width - 1][m] != simv_wall) f[width - 1][m] = simv_exit;
+							if (f[n][m + 1] != simv_wall) f[n][m + 1] = simv_exit;
+							if (f[n][m - 1] != simv_wall) f[n][m - 1] = simv_exit;
+						}
+					}
+					else if (f[n][m] == simv_exit && n == width - 1 && m != 0 && m != height - 1)
+					{
+						if (f[0][m] == simv_hero || f[n - 1][m] == simv_hero || f[n][m + 1] == simv_hero || f[n][m - 1] == simv_hero) flag = true;
+						else {
+							if (f[0][m] != simv_wall) f[0][m] = simv_exit;
+							if (f[n - 1][m] != simv_wall) f[n - 1][m] = simv_exit;
+							if (f[n][m + 1] != simv_wall) f[n][m + 1] = simv_exit;
+							if (f[n][m - 1] != simv_wall) f[n][m - 1] = simv_exit;
+						}
+					}
+					else if (f[n][m] == simv_exit && n != 0 && n != width - 1 && m == 0)
+					{
+						if (f[n + 1][m] == simv_hero || f[n - 1][m] == simv_hero || f[n][m + 1] == simv_hero || f[n][height - 1] == simv_hero) flag = true;
+						else {
+							if (f[n + 1][m] != simv_wall) f[n + 1][m] = simv_exit;
+							if (f[n - 1][m] != simv_wall) f[n - 1][m] = simv_exit;
+							if (f[n][m + 1] != simv_wall) f[n][m + 1] = simv_exit;
+							if (f[n][height - 1] != simv_wall) f[n][height - 1] = simv_exit;
+						}
+					}
+					else if (f[n][m] == simv_exit && n != 0 && n != width - 1 && m == height - 1)
+					{
+						if (f[n + 1][m] == simv_hero || f[n - 1][m] == simv_hero || f[n][0] == simv_hero || f[n][m - 1] == simv_hero) flag = true;
+						else {
+							if (f[n + 1][m] != simv_wall) f[n + 1][m] = simv_exit;
+							if (f[n - 1][m] != simv_wall) f[n - 1][m] = simv_exit;
+							if (f[n][0] != simv_wall) f[n][0] = simv_exit;
+							if (f[n][m - 1] != simv_wall) f[n][m - 1] = simv_exit;
+						}
+					}
+					// доделать обработку углов, сократить код и сделать его читаемым 
+				}
+			}
+		}
+		for (int n = 0; n < width; n++)
+		{
+			for (int m = 0; m < height; m++)
+			{
+				if (f[n][m] == simv_exit) f[n][m] = simv_floor;
+			}
+		}
+		if (flag) f[nwas][mwas] = simv_exit;
+		return flag;
 	}
 };
 
@@ -110,14 +209,10 @@ int main()
 			ynew = lvl.hero.y; xnew = lvl.hero.x;
 			switch (direction)
 			{
-			case 'w':xnew--;
-				break;
-			case 'a':ynew--;
-				break;
-			case 's':xnew++;
-				break;
-			case 'd':ynew++;
-				break;
+			case 'w':xnew--; break;
+			case 'a':ynew--; break;
+			case 's':xnew++; break;
+			case 'd':ynew++; break;
 			}
 			xnew = xnew % n; if (xnew == -1)xnew = n - 1;
 			ynew = ynew % m; if (ynew == -1)ynew = m - 1;
@@ -130,12 +225,11 @@ int main()
 			if (direction != '0')
 			{
 				steps++;
-				score = (1 + (double)steps / 10.0)*5.0*(double)lvlnumber / ((double)steps * (1 + (double)steps / 100.0));
+				score = lvlnumber * (1 + (double)lvlnumber / 100.0) - (double)steps / 10.0;            //(1 + (double)lvlnumber )*5.0*(double)lvlnumber / ((double)steps * (1 + (double)steps / 100.0));
 			}
 			lvl.Show(steps, score);
 		}
 		lvlnumber++;
-		score = (1 + (double)steps / 10.0)*5.0*(double)lvlnumber / (double)steps;
 		lvl.Show(steps, score);
 	}
 	return 0;
