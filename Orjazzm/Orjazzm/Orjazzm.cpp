@@ -332,8 +332,8 @@ int main()
 
 	string pos[skinamount] = { "  ","  ","  ","  ", "  ","  " };
 
-	if (bestscore >= 3) { dangers[0] = true; }
-	if (bestscore >= 10) { skins[1] = true; dangers[1] = true; }
+	if (bestscore >= 5) { dangers[0] = true; }
+	if (bestscore >= 15) { skins[1] = true; dangers[1] = true; }
 	if (bestscore >= 25) { skins[2] = true; dangers[2] = true; }
 	if (bestscore >= 50) { skins[3] = true; }
 	if (bestscore >= 100) { skins[4] = true; }
@@ -404,17 +404,6 @@ int main()
 				{
 					lvl.pole[lvl.hero.x][lvl.hero.y] = lvl.hero.memory;
 					direction = _getch();
-					if (direction == 224)
-					{
-						int m = _getch();
-						switch (m)
-						{
-						case 72:direction = 'w'; break;
-						case 75:direction = 'a'; break;
-						case 80:direction = 's'; break;
-						case 77:direction = 'd'; break;
-						}
-					}
 					ynew = lvl.hero.y; xnew = lvl.hero.x;
 					switch (direction)
 					{
@@ -435,6 +424,12 @@ int main()
 					{
 						steps++;
 						score = lvlnumber * (1 + (double)lvlnumber / 100.0) - (double)steps / (10 + 2 * lvlnumber / 3) + bonus;
+
+						if (bestscore < 5 && score >= 5) { dangers[0] = true; newpage = true; }
+						if (bestscore < 10 && score >= 10) { skins[1] = true; newskin = true; dangers[1] = true; newpage = true; }
+						if (bestscore < 25 && score >= 25) { skins[2] = true; newskin = true; }
+						if (bestscore < 50 && score >= 50) { skins[3] = true; newskin = true; }
+						if (bestscore < 100 && score >= 100) { skins[4] = true; newskin = true; }
 						if (score > bestscore)
 						{
 							bestscore = score;
@@ -442,18 +437,13 @@ int main()
 							sf << bestscore << " " << skins[5];
 							sf.close();
 						}
-						if (bestscore >= 5) { dangers[0] = true; newpage = true; }
-						if (bestscore >= 10) { skins[1] = true; newskin = true; dangers[1] = true; newpage = true; }
-						if (bestscore >= 25) { skins[2] = true; newskin = true; }
-						if (bestscore >= 50) { skins[3] = true; newskin = true; }
-						if (bestscore >= 100) { skins[4] = true; newskin = true; }
 					}
 					lvl.Show(steps, score, bestscore, lvl.areyoubig);
 				}
 				lvlnumber++;
 				if (lvl.areyoubig)
 				{
-					bonus += 5;
+					bonus += 3;
 					score = lvlnumber * (1 + (double)lvlnumber / 100.0) - (double)steps / (10 + 2 * lvlnumber / 3) + bonus;
 				}
 				lvl.Show(steps, score, bestscore, lvl.areyoubig);
