@@ -1,3 +1,3 @@
 ﻿  Orjazzm.cpp
-c:\users\grafe\onedrive\документы\github\orjazzm\orjazzm\orjazzm\orjazzm.cpp(43): warning C4838: преобразование из "int" в "SHORT" требует сужающего преобразования
+c:\users\grafe\onedrive\документы\github\orjazzm\orjazzm\orjazzm\orjazzm.cpp(428): warning C4566: символ, представленный универсальным именем символа "\u2593", невозможно представить в текущей кодовой странице (1251)
   Orjazzm.vcxproj -> C:\Users\grafe\OneDrive\Документы\GitHub\Orjazzm\Orjazzm\Debug\Orjazzm.exe
